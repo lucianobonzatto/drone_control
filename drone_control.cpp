@@ -69,7 +69,7 @@ DroneControl::~DroneControl()
   vel_msg.twist.angular.z = 0;
   ros_client_->velocity_pub.publish(vel_msg);
 
-  drone_control.land();
+  this->land();
 
 }
 
@@ -113,8 +113,9 @@ void DroneControl::flyToGlobal(double latitude, double longitude, double altitud
   }
 }
 
-void DroneControl::flyToLocal(double x, double y, double z, double yaw)
+void DroneControl::flyToLocal(double x, double y, double z)
 {
+  double yaw = 0;
   if(!std::isfinite(yaw))
   {
     yaw = currentYaw();
@@ -135,7 +136,7 @@ void DroneControl::flyToLocal(double x, double y, double z, double yaw)
   }
 
   //Publish for another second
-  for(int i = 0; ros::ok() && i < 1 * ROS_RATE; ++i)
+  for(int i = 0; ros::ok() && i < ROS_RATE/20; ++i)
   {
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
@@ -146,13 +147,13 @@ void DroneControl::flyToLocal(double x, double y, double z, double yaw)
 void DroneControl::hover(double seconds)
 {
   ROS_INFO("Hovering for %f seconds in position: E: %f, N: %f, U: %f", seconds,
-           setpoint_pos_ENU_.pose.position.x,
-           setpoint_pos_ENU_.pose.position.y,
-           setpoint_pos_ENU_.pose.position.z);
+           local_position_.pose.position.x,
+           local_position_.pose.position.y,
+           local_position_.pose.position.z);
 
   for(int i = 0; ros::ok() && i < 15 * ROS_RATE; ++i)
   {
-    ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
+    ros_client_->setpoint_pos_pub_.publish(local_position_);
     ros::spinOnce();
     rate_->sleep();
   }
@@ -178,7 +179,7 @@ void DroneControl::goMeter(double x, double y, double z)
            vel_msg.twist.linear.y,
            vel_msg.twist.linear.z);
 
-  for(int i = 0; i<MAX_ATTEMPTS && ros::ok() && distance(initial_position, local_position_) < 1; ++i)
+  for(int i = 0; i<MAX_ATTEMPTS && ros::ok() && distance(initial_position, local_position_) < 10; ++i)
   {
     ros_client_->velocity_pub.publish(vel_msg);
     ros::spinOnce();
@@ -187,7 +188,13 @@ void DroneControl::goMeter(double x, double y, double z)
   vel_msg.twist.linear.x = 0;
   vel_msg.twist.linear.y = 0;
   vel_msg.twist.linear.z = 0;
-  ros_client_->velocity_pub.publish(vel_msg);
+
+  for(int i = 0; i<MAX_ATTEMPTS && ros::ok(); ++i)
+  {
+    ros_client_->velocity_pub.publish(vel_msg);
+    ros::spinOnce();
+    rate_->sleep();
+  }
   ROS_INFO("Movement finished!");
 
   return;

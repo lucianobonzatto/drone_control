@@ -196,6 +196,12 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(offboard_control main.cpp drone_control.cpp ros_client.cpp)
-target_link_libraries(offboard_control ${catkin_LIBRARIES})
+add_executable(cmd_vel_test cmd_vel_main.cpp drone_control.cpp ros_client.cpp)
+target_link_libraries(cmd_vel_test ${catkin_LIBRARIES})
+
+add_executable(cmd_pose_test cmd_pose_main.cpp drone_control.cpp ros_client.cpp)
+target_link_libraries(cmd_pose_test ${catkin_LIBRARIES})
+
+add_executable(cmd_takeoff_test cmd_takeoff_main.cpp drone_control.cpp ros_client.cpp)
+target_link_libraries(cmd_takeoff_test ${catkin_LIBRARIES})
 
