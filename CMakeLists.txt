@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(offboard_control)
+project(drone_control)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
   add_compile_options(-std=c++11)
@@ -196,12 +196,12 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(cmd_vel_test cmd_vel_main.cpp drone_control.cpp ros_client.cpp)
+add_executable(cmd_vel_test src/cmd_vel_main.cpp include/drone_control.cpp include/ros_client.cpp)
 target_link_libraries(cmd_vel_test ${catkin_LIBRARIES})
 
-add_executable(cmd_pose_test cmd_pose_main.cpp drone_control.cpp ros_client.cpp)
+add_executable(cmd_pose_test src/cmd_pose_main.cpp include/drone_control.cpp include/ros_client.cpp)
 target_link_libraries(cmd_pose_test ${catkin_LIBRARIES})
 
-add_executable(cmd_takeoff_test cmd_takeoff_main.cpp drone_control.cpp ros_client.cpp)
+add_executable(cmd_takeoff_test src/cmd_takeoff_main.cpp include/drone_control.cpp include/ros_client.cpp)
 target_link_libraries(cmd_takeoff_test ${catkin_LIBRARIES})
 
