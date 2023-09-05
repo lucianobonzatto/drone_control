@@ -205,6 +205,6 @@ target_link_libraries(cmd_pose_test ${catkin_LIBRARIES})
 add_executable(cmd_takeoff_test src/cmd_takeoff_main.cpp include/drone_control.cpp include/ros_client.cpp)
 target_link_libraries(cmd_takeoff_test ${catkin_LIBRARIES})
 
-add_executable(republish src/republish.cpp include/drone_control.cpp include/ros_client.cpp)
-target_link_libraries(republish ${catkin_LIBRARIES})
+#add_executable(republish src/republish.cpp include/drone_control.cpp include/ros_client.cpp)
+#target_link_libraries(republish ${catkin_LIBRARIES})
 
