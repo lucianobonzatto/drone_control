@@ -11,20 +11,21 @@ int main(int argc, char **argv)
 
   drone_control.takeOff();
 
-  drone_control.goMeter(0, 0, 0);
-//  drone_control.goMeter(0, 0, 0);
-//  drone_control.goMeter(1, 0, 0);
-//  drone_control.goMeter(0, 0, 1);
+  // drone_control.goMeter(0, 0, 0);
+  // drone_control.goMeter(0, 0, 0);
+  // drone_control.goMeter(1, 0, 0);
+  // drone_control.goMeter(0, 0, 1);
 
-  //drone_control.flyToLocal(4.0, -5.0, DroneControl::SAFETY_ALTITUDE_GPS);
+  // drone_control.flyToLocal(4.0, -5.0, DroneControl::SAFETY_ALTITUDE_GPS);
 
-//  drone_control.hover(10);
+  // drone_control.hover(10);
 
   drone_control.land();
-  //drone_control.disarm();
+  drone_control.disarm();
 
-  while(ros::ok() && DroneControl::KEEP_ALIVE)
+  while (ros::ok() && DroneControl::KEEP_ALIVE)
   {
+    // std::cout << "----\n";
     ros::spin();
   }
 
