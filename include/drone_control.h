@@ -61,7 +61,7 @@ class DroneControl
     
     void goMeter(double x, double y, double z);
     
-    void offboardMode();
+    void guidedMode();
     void takeOff();
     void land();
     void disarm();

@@ -7,7 +7,7 @@ int main(int argc, char **argv)
   ROSClient ros_client(argc, argv);
   DroneControl drone_control(&ros_client);
 
-  drone_control.offboardMode();
+  drone_control.guidedMode();
 
   drone_control.takeOff();
 

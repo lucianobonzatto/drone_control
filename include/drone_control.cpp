@@ -200,7 +200,7 @@ void DroneControl::goMeter(double x, double y, double z)
   return;
 }
 
-void DroneControl::offboardMode()
+void DroneControl::guidedMode()
 {
   // Wait for FCU connection
   while(ros::ok() && current_state_.connected)
