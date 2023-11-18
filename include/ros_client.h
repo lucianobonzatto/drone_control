@@ -28,6 +28,7 @@ class ROSClient
 
     ros::ServiceClient arming_client_;
     ros::ServiceClient land_client_;
+    ros::ServiceClient takeoff_client_;
     ros::ServiceClient set_mode_client_;
 
     void setParam(const std::string &key, double d);

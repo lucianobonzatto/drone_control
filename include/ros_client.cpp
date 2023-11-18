@@ -38,6 +38,8 @@ void ROSClient::init(DroneControl *const drone_control)
 
   arming_client_ = nh_->serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
   land_client_ = nh_->serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/land");
+  takeoff_client_ = nh_->serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/takeoff");
+  
   set_mode_client_ = nh_->serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
 }
 

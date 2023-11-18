@@ -37,7 +37,7 @@ class DroneControl
     static constexpr float TEST_FLIGHT_DURATION = 3.0; //In seconds per side
     static constexpr float TEST_FLIGHT_LENGTH = 2.0;   //In meters
     static constexpr int   TEST_FLIGHT_REPEAT = 2;     //Times
-    static constexpr bool  KEEP_ALIVE = false;
+    static constexpr bool  KEEP_ALIVE = true;
     static constexpr double LAT_DEG_TO_M = 111000.0;
     static constexpr double LON_DEG_TO_M = 75000.0;
 

@@ -69,7 +69,7 @@ DroneControl::~DroneControl()
   vel_msg.twist.angular.z = 0;
   ros_client_->velocity_pub.publish(vel_msg);
 
-  this->land();
+  // this->land();
 
 }
 
@@ -217,7 +217,7 @@ void DroneControl::offboardMode()
     rate_->sleep();
   }
 
-  ROS_INFO("Switching to OFFBOARD mode");
+  ROS_INFO("Switching to GUIDED mode");
 
   if(ros::Time::now() - local_position_.header.stamp < ros::Duration(1.0))
   {
@@ -239,7 +239,7 @@ void DroneControl::offboardMode()
 
   setpoint_pos_ENU_ = gps_init_pos_ = local_position_;
 
-  // Send a few setpoints before starting, otherwise px4 will not switch to OFFBOARD mode
+  // Send a few setpoints before starting, otherwise px4 will not switch to GUIDED mode
   for(int i = 20; ros::ok() && i > 0; --i)
   {
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
@@ -248,21 +248,21 @@ void DroneControl::offboardMode()
   }
 
   mavros_msgs::SetMode offb_set_mode;
-  offb_set_mode.request.custom_mode = "OFFBOARD";
+  offb_set_mode.request.custom_mode = "GUIDED";
 
   arm_cmd_.request.value = true;
 
   last_request_ = ros::Time::now();
 
-  // Change to offboard mode and arm
+  // Change to GUIDED mode and arm
   while(ros::ok() && !current_state_.armed)
   {
-    if( current_state_.mode != "OFFBOARD" && (ros::Time::now() - last_request_ > ros::Duration(5.0)))
+    if( current_state_.mode != "GUIDED" && (ros::Time::now() - last_request_ > ros::Duration(5.0)))
     {
       ROS_INFO("%s",current_state_.mode.c_str());
       if( ros_client_->set_mode_client_.call(offb_set_mode) && offb_set_mode.response.mode_sent)
       {
-        ROS_INFO("Offboard enabled");
+        ROS_INFO("GUIDED enabled");
       }
       last_request_ = ros::Time::now();
     }
@@ -287,18 +287,18 @@ void DroneControl::offboardMode()
 
 void DroneControl::takeOff()
 {
-  ROS_INFO("Taking off. Current position: E: %f, N: %f, U: %f", local_position_.pose.position.x,
-           local_position_.pose.position.y, local_position_.pose.position.z);
+  mavros_msgs::CommandTOL takeoff_cmd;
+  takeoff_cmd.request.yaw = 0;
+  takeoff_cmd.request.latitude = NAN; //Land at current location
+  takeoff_cmd.request.longitude = NAN;
+  takeoff_cmd.request.altitude = TAKEOFF_ALTITUDE;
 
-  // Take off
-  setpoint_pos_ENU_ = gps_init_pos_;
-  setpoint_pos_ENU_.pose.position.z += TAKEOFF_ALTITUDE;
-
-  ROS_INFO("Taking off");
-  for(int i = 0; ros::ok() && i < 10 * ROS_RATE; ++i)
+  ROS_INFO("Trying to Takeoff");
+  while(!(ros_client_->takeoff_client_.call(takeoff_cmd) && takeoff_cmd.response.success))
   {
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
+    ROS_WARN("Retrying to Takeoff");
     rate_->sleep();
   }
   ROS_INFO("Takeoff finished!");
