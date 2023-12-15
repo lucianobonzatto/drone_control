@@ -59,8 +59,7 @@ class DroneControl
     void flyToLocal(double x, double y, double z);
     void hover(double seconds);
     
-    void goMeter(double x, double y, double z);
-    
+    void cmd_vel(double x, double y, double z, double ang);
     void guidedMode();
     void takeOff();
     void land();

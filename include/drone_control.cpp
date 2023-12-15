@@ -161,43 +161,31 @@ void DroneControl::hover(double seconds)
   return;
 }
 
-void DroneControl::goMeter(double x, double y, double z)
+void DroneControl::cmd_vel(double x, double y, double z, double ang)
 {
-  geometry_msgs::PoseStamped initial_position = local_position_;
-  geometry_msgs::TwistStamped vel_msg;
-  
-  vel_msg.header.stamp = ros::Time::now();
+  geometry_msgs::TwistStamped vel_msg, world_msg;
+
+  transformStamped_.header.stamp = local_position_.header.stamp;
+  transformStamped_.header.frame_id = "world";
+  transformStamped_.child_frame_id = "drone";
+  transformStamped_.transform.translation.x = local_position_.pose.position.x;
+  transformStamped_.transform.translation.y = local_position_.pose.position.y;
+  transformStamped_.transform.translation.z = local_position_.pose.position.z;
+  transformStamped_.transform.rotation = local_position_.pose.orientation;
+
   vel_msg.twist.linear.x = x;
   vel_msg.twist.linear.y = y;
   vel_msg.twist.linear.z = z;
-  vel_msg.twist.angular.x = 0;
-  vel_msg.twist.angular.y = 0;
-  vel_msg.twist.angular.z = 0;
 
-  ROS_INFO("Going one meter to: x: %f, y: %f, z: %f",
-           vel_msg.twist.linear.x,
-           vel_msg.twist.linear.y,
-           vel_msg.twist.linear.z);
+  tf2::doTransform(vel_msg.twist.linear, world_msg.twist.linear, transformStamped_);
+  world_msg.header.stamp = ros::Time::now();
+  world_msg.twist.angular.x = 0;
+  world_msg.twist.angular.y = 0;
+  world_msg.twist.angular.z = ang;
 
-  for(int i = 0; i<MAX_ATTEMPTS && ros::ok() && distance(initial_position, local_position_) < 10; ++i)
-  {
-    ros_client_->velocity_pub.publish(vel_msg);
-    ros::spinOnce();
-    rate_->sleep();
-  }
-  vel_msg.twist.linear.x = 0;
-  vel_msg.twist.linear.y = 0;
-  vel_msg.twist.linear.z = 0;
-
-  for(int i = 0; i<MAX_ATTEMPTS && ros::ok(); ++i)
-  {
-    ros_client_->velocity_pub.publish(vel_msg);
-    ros::spinOnce();
-    rate_->sleep();
-  }
-  ROS_INFO("Movement finished!");
-
-  return;
+  ros_client_->velocity_pub.publish(world_msg);
+  ros::spinOnce();
+  rate_->sleep();
 }
 
 void DroneControl::guidedMode()
