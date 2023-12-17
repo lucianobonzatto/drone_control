@@ -240,8 +240,8 @@ void DroneControl::guidedMode()
   while (ros::ok())
   {
     if (current_state_.mode == "GUIDED")
-      {
-        ROS_INFO("GUIDED enabled");
+    {
+      ROS_INFO("GUIDED enabled");
       break;
     }
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
@@ -254,20 +254,29 @@ void DroneControl::guidedMode()
 
 void DroneControl::takeOff()
 {
-  mavros_msgs::CommandTOL takeoff_cmd;
-  takeoff_cmd.request.yaw = 0;
-  takeoff_cmd.request.latitude = NAN; // Land at current location
-  takeoff_cmd.request.longitude = NAN;
-  takeoff_cmd.request.altitude = TAKEOFF_ALTITUDE;
-
-  ROS_INFO("Trying to Takeoff");
-  while (!(ros_client_->takeoff_client_.call(takeoff_cmd) && takeoff_cmd.response.success))
+  ROS_INFO("awaiting to arm");
+  mavros_msgs::CommandBool arm_request;
+  arm_request.request.value = true;
+  while (ros::ok() && !current_state_.armed)
   {
-    ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
-    ROS_WARN("Retrying to Takeoff");
     rate_->sleep();
+    ros_client_->arming_client_.call(arm_request);
+    ROS_INFO("awaiting to arm %d", current_state_.armed);
   }
+  ROS_INFO("awaiting to arm %d", current_state_.armed);
+
+  mavros_msgs::CommandTOL takeoff_request;
+  takeoff_request.request.altitude = 3;
+  ROS_INFO("Trying to Takeoff");
+  while (ros::ok() && !takeoff_request.response.success)
+  {
+    ROS_WARN("Retrying to Takeoff");
+    ros::spinOnce();
+    rate_->sleep();
+    ros_client_->takeoff_client_.call(takeoff_request);
+  }
+
   ROS_INFO("Takeoff finished!");
   return;
 }
