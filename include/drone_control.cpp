@@ -113,9 +113,8 @@ void DroneControl::flyToGlobal(double latitude, double longitude, double altitud
   }
 }
 
-void DroneControl::flyToLocal(double x, double y, double z)
+void DroneControl::flyToLocal(double x, double y, double z, double yaw)
 {
-  double yaw = 0;
   if (!std::isfinite(yaw))
   {
     yaw = currentYaw();
