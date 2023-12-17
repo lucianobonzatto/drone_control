@@ -205,5 +205,8 @@ target_link_libraries(pose_test ${catkin_LIBRARIES})
 add_executable(velocity_test src/velocity_test.cpp include/drone_control.cpp include/ros_client.cpp)
 target_link_libraries(velocity_test ${catkin_LIBRARIES})
 
+add_executable(cmd_land src/cmd_land.cpp)
+target_link_libraries(cmd_land ${catkin_LIBRARIES})
+
 add_executable(follow src/follow.cpp)
 target_link_libraries(follow ${catkin_LIBRARIES})
