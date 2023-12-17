@@ -206,7 +206,7 @@ void DroneControl::guidedMode()
     rate_->sleep();
   }
 
-  ROS_INFO("Switching to GUIDED mode");
+  ROS_INFO("awaiting to GUIDED mode");
 
   if (ros::Time::now() - local_position_.header.stamp < ros::Duration(1.0))
   {
@@ -228,7 +228,7 @@ void DroneControl::guidedMode()
 
   setpoint_pos_ENU_ = gps_init_pos_ = local_position_;
 
-  // Send a few setpoints before starting, otherwise px4 will not switch to GUIDED mode
+  // Send a few setpoints before starting
   for (int i = 20; ros::ok() && i > 0; --i)
   {
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
@@ -236,35 +236,13 @@ void DroneControl::guidedMode()
     rate_->sleep();
   }
 
-  mavros_msgs::SetMode offb_set_mode;
-  offb_set_mode.request.custom_mode = "GUIDED";
-
   arm_cmd_.request.value = true;
-
-  last_request_ = ros::Time::now();
-
-  // Change to GUIDED mode and arm
-  while (ros::ok() && !current_state_.armed)
+  while (ros::ok())
   {
-    if (current_state_.mode != "GUIDED" && (ros::Time::now() - last_request_ > ros::Duration(5.0)))
-    {
-      ROS_INFO("%s", current_state_.mode.c_str());
-      if (ros_client_->set_mode_client_.call(offb_set_mode) && offb_set_mode.response.mode_sent)
+    if (current_state_.mode == "GUIDED")
       {
         ROS_INFO("GUIDED enabled");
-      }
-      last_request_ = ros::Time::now();
-    }
-    else
-    {
-      if (!current_state_.armed && (ros::Time::now() - last_request_ > ros::Duration(5.0)))
-      {
-        if (ros_client_->arming_client_.call(arm_cmd_) && arm_cmd_.response.success)
-        {
-          ROS_INFO("Vehicle armed");
-        }
-        last_request_ = ros::Time::now();
-      }
+      break;
     }
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
