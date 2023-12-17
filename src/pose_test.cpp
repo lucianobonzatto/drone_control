@@ -8,13 +8,17 @@ int main(int argc, char **argv)
   DroneControl drone_control(&ros_client);
 
   drone_control.guidedMode();
-
   drone_control.takeOff();
   int altitude = 5;
 
-  drone_control.flyToLocal(0, 0, altitude);
-  drone_control.flyToLocal(1, 0, altitude);
-  drone_control.flyToLocal(-1, 0, altitude);
+  drone_control.flyToLocal(0, 0, altitude, 0);
+  drone_control.hover(5);
+  drone_control.flyToLocal(2, 0, altitude, 0);
+  drone_control.hover(5);
+  drone_control.flyToLocal(2, 0, altitude, 0);
+  drone_control.hover(5);
+  drone_control.flyToLocal(-4, 0, altitude, 0);
+  drone_control.hover(5);
 
   drone_control.land();
   return 0;
