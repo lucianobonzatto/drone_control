@@ -206,7 +206,6 @@ void DroneControl::guidedMode()
     rate_->sleep();
   }
 
-  ROS_INFO("awaiting to GUIDED mode");
 
   if (ros::Time::now() - local_position_.header.stamp < ros::Duration(1.0))
   {
@@ -239,6 +238,7 @@ void DroneControl::guidedMode()
   arm_cmd_.request.value = true;
   while (ros::ok())
   {
+  ROS_INFO("awaiting to GUIDED mode");
     if (current_state_.mode == "GUIDED")
     {
       ROS_INFO("GUIDED enabled");
@@ -266,11 +266,16 @@ void DroneControl::takeOff()
   }
   ROS_INFO("awaiting to arm %d", current_state_.armed);
 
+  sleep(3);
+
   mavros_msgs::CommandTOL takeoff_request;
   takeoff_request.request.altitude = 3;
   ROS_INFO("Trying to Takeoff");
-  while (ros::ok() && !takeoff_request.response.success)
+  int i = 0;
+//  while (ros::ok() && !takeoff_request.response.success)
+  while (ros::ok() && i < 30)
   {
+    i++;
     ROS_WARN("Retrying to Takeoff");
     ros::spinOnce();
     rate_->sleep();

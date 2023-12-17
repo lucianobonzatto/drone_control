@@ -10,9 +10,9 @@ int main(int argc, char **argv)
   drone_control.guidedMode();
   drone_control.takeOff();
 
-  drone_control.hover(4);
+  drone_control.hover(5);
 
   drone_control.land();
-  drone_control.disarm();
+  // drone_control.disarm();
   return 0;
 }
