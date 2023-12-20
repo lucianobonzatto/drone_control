@@ -273,13 +273,14 @@ void DroneControl::takeOff()
   ROS_INFO("Trying to Takeoff");
   int i = 0;
 //  while (ros::ok() && !takeoff_request.response.success)
-  while (ros::ok() && i < 30)
+  while (ros::ok() && i < 20)
   {
     i++;
     ROS_WARN("Retrying to Takeoff");
-    ros::spinOnce();
-    rate_->sleep();
+//    ros::spinOnce();
+//    rate_->sleep();
     ros_client_->takeoff_client_.call(takeoff_request);
+    ros::Duration(.1).sleep();
   }
 
   ROS_INFO("Takeoff finished!");
