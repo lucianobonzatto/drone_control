@@ -279,6 +279,7 @@ void DroneControl::takeOff()
     ros_client_->takeoff_client_.call(takeoff_request);
     ros::Duration(.1).sleep();
   }
+  sleep(15);
 
   ROS_INFO("Takeoff finished!");
   return;
