@@ -236,9 +236,9 @@ void DroneControl::guidedMode()
   }
 
   arm_cmd_.request.value = true;
+  ROS_INFO("awaiting to GUIDED mode");
   while (ros::ok())
   {
-  ROS_INFO("awaiting to GUIDED mode");
     if (current_state_.mode == "GUIDED")
     {
       ROS_INFO("GUIDED enabled");
@@ -272,13 +272,10 @@ void DroneControl::takeOff()
   takeoff_request.request.altitude = 3;
   ROS_INFO("Trying to Takeoff");
   int i = 0;
-//  while (ros::ok() && !takeoff_request.response.success)
   while (ros::ok() && i < 20)
   {
     i++;
-    ROS_WARN("Retrying to Takeoff");
-//    ros::spinOnce();
-//    rate_->sleep();
+    ROS_INFO("Retrying to Takeoff");
     ros_client_->takeoff_client_.call(takeoff_request);
     ros::Duration(.1).sleep();
   }
