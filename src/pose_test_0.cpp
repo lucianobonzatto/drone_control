@@ -9,7 +9,7 @@ int main(int argc, char **argv)
 
   drone_control.guidedMode();
   drone_control.takeOff();
-  int altitude = 5;
+  int altitude = 6;
 
   drone_control.hover(5);
   drone_control.flyToLocal(0, 0, altitude, 0);
