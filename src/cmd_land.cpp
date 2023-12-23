@@ -70,7 +70,7 @@ int main(int argc, char **argv)
   }
   ROS_INFO("Connected to FCU");
   // wait for mode to be set to guided
-  while (current_state.mode != "GUIDED")
+  while (current_state.mode != "OFFBOARD")
   {
     ros::spinOnce();
     rate.sleep();

@@ -153,7 +153,7 @@ void DroneControl::hover(double seconds)
 
   for (int i = 0; ros::ok() && i < 15 * ROS_RATE; ++i)
   {
-    ros_client_->setpoint_pos_pub_.publish(local_position_);
+    //ros_client_->setpoint_pos_pub_.publish(local_position_);
     ros::spinOnce();
     rate_->sleep();
   }
@@ -209,20 +209,20 @@ void DroneControl::guidedMode()
 
   if (ros::Time::now() - local_position_.header.stamp < ros::Duration(1.0))
   {
-    ROS_INFO("Local_position available");
+      ROS_INFO("Local_position available");
   }
-  else
+    else
   {
-    ROS_WARN("Local_position not available, initializing to 0");
-    local_position_.header.stamp = ros::Time::now();
-    local_position_.header.frame_id = "world";
-    local_position_.pose.position.x = 0;
-    local_position_.pose.position.y = 0;
-    local_position_.pose.position.z = 0;
-    local_position_.pose.orientation.x = 0;
-    local_position_.pose.orientation.y = 0;
-    local_position_.pose.orientation.z = 0;
-    local_position_.pose.orientation.w = 1;
+      ROS_WARN("Local_position not available, initializing to 0");
+      local_position_.header.stamp = ros::Time::now();
+      local_position_.header.frame_id = "world";
+      local_position_.pose.position.x = 0;
+      local_position_.pose.position.y = 0;
+      local_position_.pose.position.z = 0;
+      local_position_.pose.orientation.x = 0;
+      local_position_.pose.orientation.y = 0;
+      local_position_.pose.orientation.z = 0;
+      local_position_.pose.orientation.w = 1;
   }
 
   setpoint_pos_ENU_ = gps_init_pos_ = local_position_;
@@ -236,12 +236,12 @@ void DroneControl::guidedMode()
   }
 
   arm_cmd_.request.value = true;
-  ROS_INFO("awaiting to GUIDED mode");
+  ROS_INFO("awaiting to OFFBOARD mode");
   while (ros::ok())
   {
-    if (current_state_.mode == "GUIDED")
+    if (current_state_.mode == "OFFBOARD")
     {
-      ROS_INFO("GUIDED enabled");
+      ROS_INFO("OFFBOARD enabled");
       break;
     }
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
@@ -280,6 +280,8 @@ void DroneControl::takeOff()
     ros::Duration(.1).sleep();
   }
   sleep(10);
+
+  ROS_INFO("landed_state_: %d", landed_state_);
 
   ROS_INFO("Takeoff finished!");
   return;
