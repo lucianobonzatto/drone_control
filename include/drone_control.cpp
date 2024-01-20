@@ -153,7 +153,7 @@ void DroneControl::hover(double seconds)
 
   for (int i = 0; ros::ok() && i < 15 * ROS_RATE; ++i)
   {
-    //ros_client_->setpoint_pos_pub_.publish(local_position_);
+    ros_client_->setpoint_pos_pub_.publish(local_position_);
     ros::spinOnce();
     rate_->sleep();
   }
@@ -270,16 +270,22 @@ void DroneControl::takeOff()
 
   mavros_msgs::CommandTOL takeoff_request;
   takeoff_request.request.altitude = 3;
+	setpoint_pos_ENU_ = gps_init_pos_;
+	setpoint_pos_ENU_.pose.position.z += TAKEOFF_ALTITUDE;
+
   ROS_INFO("Trying to Takeoff");
   int i = 0;
-  while (ros::ok() && i < 20)
+  while (ros::ok() && i < 10*ROS_RATE)
   {
     i++;
     ROS_INFO("Retrying to Takeoff");
-    ros_client_->takeoff_client_.call(takeoff_request);
-    ros::Duration(.1).sleep();
+//    ros_client_->takeoff_client_.call(takeoff_request);
+	ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
+    ros::spinOnce();
+    rate_->sleep();
+//    ros::Duration(.1).sleep();
   }
-  sleep(10);
+//  sleep(10);
 
   ROS_INFO("landed_state_: %d", landed_state_);
 
