@@ -2,6 +2,9 @@
 #include "../include/drone_control.h"
 #include "../include/ros_client.h"
 
+#define HOVER_TIME 2
+#define ALTITUDE 7
+
 int main(int argc, char **argv)
 {
   ROSClient ros_client(argc, argv);
@@ -9,12 +12,16 @@ int main(int argc, char **argv)
 
   drone_control.guidedMode();
   drone_control.takeOff();
-  int altitude = 6;
 
-  drone_control.hover(5);
-  drone_control.flyToLocal(0, 0, altitude, 0);
-  drone_control.hover(5);
-  drone_control.flyToLocal(2, 0, altitude, 0);
+  drone_control.hover(HOVER_TIME);
+  drone_control.flyToLocal(0, 0, ALTITUDE, 0);
+  drone_control.hover(HOVER_TIME);
+  drone_control.flyToLocal(2, 0, ALTITUDE, 0);
+  drone_control.hover(HOVER_TIME);
+  drone_control.flyToLocal(4, 0, ALTITUDE, 0);
+  drone_control.hover(HOVER_TIME);
+  drone_control.flyToLocal(0, 0, ALTITUDE, 0);
+  drone_control.hover(HOVER_TIME);
 
   drone_control.land();
   return 0;

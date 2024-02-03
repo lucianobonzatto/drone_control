@@ -16,14 +16,6 @@ int main(int argc, char **argv)
   drone_control.hover(HOVER_TIME);
   drone_control.flyToLocal(0, 0, ALTITUDE, 0);
   drone_control.hover(HOVER_TIME);
-  drone_control.flyToLocal(4, 0, ALTITUDE, 0);
-  drone_control.hover(HOVER_TIME);
-  drone_control.flyToLocal(4, 4, ALTITUDE, 0);
-  drone_control.hover(HOVER_TIME);
-  drone_control.flyToLocal(0, 4, ALTITUDE, 0);
-  drone_control.hover(HOVER_TIME);
-  drone_control.flyToLocal(0, 0, ALTITUDE, 0);
-  drone_control.hover(HOVER_TIME);
 
   drone_control.land();
   return 0;
