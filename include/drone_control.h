@@ -56,11 +56,10 @@ class DroneControl
     void global_position_cb(const sensor_msgs::NavSatFix::ConstPtr &msg);
 
     void flyToGlobal(double latitude, double longitude, double altitude, double yaw);
-    void flyToLocal(double x, double y, double z);
+    void flyToLocal(double x, double y, double z, double yaw);
     void hover(double seconds);
     
-    void goMeter(double x, double y, double z);
-    
+    void cmd_vel(double x, double y, double z, double ang);
     void guidedMode();
     void takeOff();
     void land();

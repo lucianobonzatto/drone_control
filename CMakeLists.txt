@@ -196,18 +196,37 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(cmd_vel_test src/cmd_vel_main.cpp include/drone_control.cpp include/ros_client.cpp)
-target_link_libraries(cmd_vel_test ${catkin_LIBRARIES})
+## normal nodes
 
-add_executable(cmd_pose_test src/cmd_pose_main.cpp include/drone_control.cpp include/ros_client.cpp)
-target_link_libraries(cmd_pose_test ${catkin_LIBRARIES})
+add_executable(drone_test src/drone_test.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(drone_test ${catkin_LIBRARIES})
 
-add_executable(cmd_takeoff_test src/cmd_takeoff_main.cpp include/drone_control.cpp include/ros_client.cpp)
-target_link_libraries(cmd_takeoff_test ${catkin_LIBRARIES})
+add_executable(cmd_land src/cmd_land.cpp)
+target_link_libraries(cmd_land ${catkin_LIBRARIES})
 
-add_executable(follow src/follow.cpp)
-target_link_libraries(follow ${catkin_LIBRARIES})
+add_executable(centralize src/centralize.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(centralize ${catkin_LIBRARIES})
 
-#add_executable(republish src/republish.cpp include/drone_control.cpp include/ros_client.cpp)
-#target_link_libraries(republish ${catkin_LIBRARIES})
+## position command test
+
+add_executable(pose_test_0 src/pose_test_0.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(pose_test_0 ${catkin_LIBRARIES})
+
+add_executable(pose_test_1 src/pose_test_1.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(pose_test_1 ${catkin_LIBRARIES})
+
+add_executable(pose_test_2 src/pose_test_2.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(pose_test_2 ${catkin_LIBRARIES})
+
+add_executable(pose_test_3 src/pose_test_3.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(pose_test_3 ${catkin_LIBRARIES})
+
+add_executable(pose_test_4 src/pose_test_4.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(pose_test_4 ${catkin_LIBRARIES})
+
+## velocity command test
+
+add_executable(velocity_test src/velocity_test.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(velocity_test ${catkin_LIBRARIES})
+
 

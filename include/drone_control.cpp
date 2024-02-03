@@ -8,6 +8,9 @@
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <geometry_msgs/Vector3.h>
 
 DroneControl::DroneControl(ROSClient *ros_client)
 {
@@ -49,7 +52,7 @@ void DroneControl::local_position_cb(const geometry_msgs::PoseStamped::ConstPtr 
   br.sendTransform(transformStamped_);
 
   cnt++;
-  if(cnt % 100 == 0)
+  if (cnt % 100 == 0)
   {
     ROS_INFO("Mavros local position: E: %f, N: %f, U: %f, yaw: %f", transformStamped_.transform.translation.x,
              transformStamped_.transform.translation.y, transformStamped_.transform.translation.z, currentYaw());
@@ -59,7 +62,7 @@ void DroneControl::local_position_cb(const geometry_msgs::PoseStamped::ConstPtr 
 DroneControl::~DroneControl()
 {
   geometry_msgs::TwistStamped vel_msg;
-  
+
   vel_msg.header.stamp = ros::Time::now();
   vel_msg.twist.linear.x = 0;
   vel_msg.twist.linear.y = 0;
@@ -70,7 +73,6 @@ DroneControl::~DroneControl()
   ros_client_->velocity_pub.publish(vel_msg);
 
   // this->land();
-
 }
 
 void DroneControl::global_position_cb(const sensor_msgs::NavSatFix::ConstPtr &msg)
@@ -79,9 +81,9 @@ void DroneControl::global_position_cb(const sensor_msgs::NavSatFix::ConstPtr &ms
   static int cnt = 0;
 
   cnt++;
-  if(cnt % 100 == 0)
+  if (cnt % 100 == 0)
   {
-    //ROS_INFO("GPS: lat: %f, long: %f, alt: %f", msg->latitude, msg->longitude, msg->altitude);
+    // ROS_INFO("GPS: lat: %f, long: %f, alt: %f", msg->latitude, msg->longitude, msg->altitude);
   }
 }
 
@@ -90,53 +92,51 @@ void DroneControl::flyToGlobal(double latitude, double longitude, double altitud
   mavros_msgs::GlobalPositionTarget target;
   target.coordinate_frame = mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_INT;
   target.type_mask = mavros_msgs::GlobalPositionTarget::IGNORE_VX |
-      mavros_msgs::GlobalPositionTarget::IGNORE_VY |
-      mavros_msgs::GlobalPositionTarget::IGNORE_VZ |
-      mavros_msgs::GlobalPositionTarget::IGNORE_AFX |
-      mavros_msgs::GlobalPositionTarget::IGNORE_AFY |
-      mavros_msgs::GlobalPositionTarget::IGNORE_AFZ |
-      mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE;
+                     mavros_msgs::GlobalPositionTarget::IGNORE_VY |
+                     mavros_msgs::GlobalPositionTarget::IGNORE_VZ |
+                     mavros_msgs::GlobalPositionTarget::IGNORE_AFX |
+                     mavros_msgs::GlobalPositionTarget::IGNORE_AFY |
+                     mavros_msgs::GlobalPositionTarget::IGNORE_AFZ |
+                     mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE;
   target.latitude = latitude;
   target.longitude = longitude;
   target.altitude = altitude;
   target.yaw = yaw;
 
-  while(ros::ok() &&
-         ( fabs(latitude - global_position_.latitude)*LAT_DEG_TO_M > 1.0
-        || fabs(longitude - global_position_.longitude)*LON_DEG_TO_M > 1.0
-        || fabs(altitude - global_position_.altitude) > 1.0))
+  while (ros::ok() &&
+         (fabs(latitude - global_position_.latitude) * LAT_DEG_TO_M > 1.0 || fabs(longitude - global_position_.longitude) * LON_DEG_TO_M > 1.0 || fabs(altitude - global_position_.altitude) > 1.0))
   {
-    ROS_INFO("Dist: lat: %f, long: %f, alt: %f", fabs(latitude - global_position_.latitude)*LAT_DEG_TO_M, fabs(longitude - global_position_.longitude)*LON_DEG_TO_M, altitude-global_position_.altitude);
+    ROS_INFO("Dist: lat: %f, long: %f, alt: %f", fabs(latitude - global_position_.latitude) * LAT_DEG_TO_M, fabs(longitude - global_position_.longitude) * LON_DEG_TO_M, altitude - global_position_.altitude);
     ros_client_->global_setpoint_pos_pub_.publish(target);
     ros::spinOnce();
     rate_->sleep();
   }
 }
 
-void DroneControl::flyToLocal(double x, double y, double z)
+void DroneControl::flyToLocal(double x, double y, double z, double yaw)
 {
-  double yaw = 0;
-  if(!std::isfinite(yaw))
+  if (!std::isfinite(yaw))
   {
     yaw = currentYaw();
     ROS_INFO("Flying to local coordinates E: %f, N: %f, U: %f, current yaw: %f", x, y, z, yaw);
   }
-  else ROS_INFO("Flying to local coordinates E: %f, N: %f, U: %f, yaw: %f", x, y, z, yaw);
+  else
+    ROS_INFO("Flying to local coordinates E: %f, N: %f, U: %f, yaw: %f", x, y, z, yaw);
 
   setpoint_pos_ENU_.pose.position.x = x;
   setpoint_pos_ENU_.pose.position.y = y;
   setpoint_pos_ENU_.pose.position.z = z;
   setpoint_pos_ENU_.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
 
-  while(ros::ok() && distance(setpoint_pos_ENU_, local_position_) > 0.5)
+  while (ros::ok() && distance(setpoint_pos_ENU_, local_position_) > 0.5)
   {
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
     rate_->sleep();
   }
 
-  //Publish for another second
-  for(int i = 0; ros::ok() && i < ROS_RATE/20; ++i)
+  // Publish for another second
+  for (int i = 0; ros::ok() && i < ROS_RATE / 20; ++i)
   {
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
@@ -151,7 +151,7 @@ void DroneControl::hover(double seconds)
            local_position_.pose.position.y,
            local_position_.pose.position.z);
 
-  for(int i = 0; ros::ok() && i < 15 * ROS_RATE; ++i)
+  for (int i = 0; ros::ok() && i < 15 * ROS_RATE; ++i)
   {
     ros_client_->setpoint_pos_pub_.publish(local_position_);
     ros::spinOnce();
@@ -161,49 +161,38 @@ void DroneControl::hover(double seconds)
   return;
 }
 
-void DroneControl::goMeter(double x, double y, double z)
+void DroneControl::cmd_vel(double x, double y, double z, double ang)
 {
-  geometry_msgs::PoseStamped initial_position = local_position_;
-  geometry_msgs::TwistStamped vel_msg;
-  
-  vel_msg.header.stamp = ros::Time::now();
+  geometry_msgs::TwistStamped vel_msg, world_msg;
+
+  transformStamped_.header.stamp = local_position_.header.stamp;
+  transformStamped_.header.frame_id = "world";
+  transformStamped_.child_frame_id = "drone";
+  transformStamped_.transform.translation.x = local_position_.pose.position.x;
+  transformStamped_.transform.translation.y = local_position_.pose.position.y;
+  transformStamped_.transform.translation.z = local_position_.pose.position.z;
+  transformStamped_.transform.rotation = local_position_.pose.orientation;
+
   vel_msg.twist.linear.x = x;
   vel_msg.twist.linear.y = y;
   vel_msg.twist.linear.z = z;
-  vel_msg.twist.angular.x = 0;
-  vel_msg.twist.angular.y = 0;
-  vel_msg.twist.angular.z = 0;
 
-  ROS_INFO("Going one meter to: x: %f, y: %f, z: %f",
-           vel_msg.twist.linear.x,
-           vel_msg.twist.linear.y,
-           vel_msg.twist.linear.z);
+  tf2::doTransform(vel_msg.twist.linear, world_msg.twist.linear, transformStamped_);
+  world_msg.header.stamp = ros::Time::now();
+  world_msg.twist.angular.x = 0;
+  world_msg.twist.angular.y = 0;
+  world_msg.twist.angular.z = ang;
 
-  for(int i = 0; i<MAX_ATTEMPTS && ros::ok() && distance(initial_position, local_position_) < 10; ++i)
-  {
-    ros_client_->velocity_pub.publish(vel_msg);
-    ros::spinOnce();
-    rate_->sleep();
-  }
-  vel_msg.twist.linear.x = 0;
-  vel_msg.twist.linear.y = 0;
-  vel_msg.twist.linear.z = 0;
-
-  for(int i = 0; i<MAX_ATTEMPTS && ros::ok(); ++i)
-  {
-    ros_client_->velocity_pub.publish(vel_msg);
-    ros::spinOnce();
-    rate_->sleep();
-  }
-  ROS_INFO("Movement finished!");
-
-  return;
+  ROS_INFO("SEND VELOCITY: x: %f y: %f z: %f yaw: %f", x, y, z, ang);
+  ros_client_->velocity_pub.publish(world_msg);
+  ros::spinOnce();
+  rate_->sleep();
 }
 
 void DroneControl::guidedMode()
 {
   // Wait for FCU connection
-  while(ros::ok() && current_state_.connected)
+  while (ros::ok() && current_state_.connected)
   {
     ros::spinOnce();
     rate_->sleep();
@@ -211,71 +200,49 @@ void DroneControl::guidedMode()
   }
 
   // Wait for ROS
-  for(int i = 0; ros::ok() && i < 4 * ROS_RATE; ++i)
+  for (int i = 0; ros::ok() && i < 4 * ROS_RATE; ++i)
   {
     ros::spinOnce();
     rate_->sleep();
   }
 
-  ROS_INFO("Switching to GUIDED mode");
 
-  if(ros::Time::now() - local_position_.header.stamp < ros::Duration(1.0))
+  if (ros::Time::now() - local_position_.header.stamp < ros::Duration(1.0))
   {
-    ROS_INFO("Local_position available");
+      ROS_INFO("Local_position available");
   }
-  else
+    else
   {
-    ROS_WARN("Local_position not available, initializing to 0");
-    local_position_.header.stamp = ros::Time::now();
-    local_position_.header.frame_id = "world";
-    local_position_.pose.position.x = 0;
-    local_position_.pose.position.y = 0;
-    local_position_.pose.position.z = 0;
-    local_position_.pose.orientation.x = 0;
-    local_position_.pose.orientation.y = 0;
-    local_position_.pose.orientation.z = 0;
-    local_position_.pose.orientation.w = 1;
+      ROS_WARN("Local_position not available, initializing to 0");
+      local_position_.header.stamp = ros::Time::now();
+      local_position_.header.frame_id = "world";
+      local_position_.pose.position.x = 0;
+      local_position_.pose.position.y = 0;
+      local_position_.pose.position.z = 0;
+      local_position_.pose.orientation.x = 0;
+      local_position_.pose.orientation.y = 0;
+      local_position_.pose.orientation.z = 0;
+      local_position_.pose.orientation.w = 1;
   }
 
   setpoint_pos_ENU_ = gps_init_pos_ = local_position_;
 
-  // Send a few setpoints before starting, otherwise px4 will not switch to GUIDED mode
-  for(int i = 20; ros::ok() && i > 0; --i)
+  // Send a few setpoints before starting
+  for (int i = 20; ros::ok() && i > 0; --i)
   {
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
     rate_->sleep();
   }
 
-  mavros_msgs::SetMode offb_set_mode;
-  offb_set_mode.request.custom_mode = "GUIDED";
-
   arm_cmd_.request.value = true;
-
-  last_request_ = ros::Time::now();
-
-  // Change to GUIDED mode and arm
-  while(ros::ok() && !current_state_.armed)
+  ROS_INFO("awaiting to OFFBOARD mode");
+  while (ros::ok())
   {
-    if( current_state_.mode != "GUIDED" && (ros::Time::now() - last_request_ > ros::Duration(5.0)))
+    if (current_state_.mode == "OFFBOARD")
     {
-      ROS_INFO("%s",current_state_.mode.c_str());
-      if( ros_client_->set_mode_client_.call(offb_set_mode) && offb_set_mode.response.mode_sent)
-      {
-        ROS_INFO("GUIDED enabled");
-      }
-      last_request_ = ros::Time::now();
-    }
-    else
-    {
-      if( !current_state_.armed && (ros::Time::now() - last_request_ > ros::Duration(5.0)))
-      {
-        if( ros_client_->arming_client_.call(arm_cmd_) && arm_cmd_.response.success)
-        {
-          ROS_INFO("Vehicle armed");
-        }
-        last_request_ = ros::Time::now();
-      }
+      ROS_INFO("OFFBOARD enabled");
+      break;
     }
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
@@ -287,20 +254,41 @@ void DroneControl::guidedMode()
 
 void DroneControl::takeOff()
 {
-  mavros_msgs::CommandTOL takeoff_cmd;
-  takeoff_cmd.request.yaw = 0;
-  takeoff_cmd.request.latitude = NAN; //Land at current location
-  takeoff_cmd.request.longitude = NAN;
-  takeoff_cmd.request.altitude = TAKEOFF_ALTITUDE;
+  ROS_INFO("awaiting to arm");
+  mavros_msgs::CommandBool arm_request;
+  arm_request.request.value = true;
+  while (ros::ok() && !current_state_.armed)
+  {
+    ros::spinOnce();
+    rate_->sleep();
+    ros_client_->arming_client_.call(arm_request);
+    ROS_INFO("awaiting to arm %d", current_state_.armed);
+  }
+  ROS_INFO("awaiting to arm %d", current_state_.armed);
+
+  sleep(3);
+
+  mavros_msgs::CommandTOL takeoff_request;
+  takeoff_request.request.altitude = 3;
+	setpoint_pos_ENU_ = gps_init_pos_;
+	setpoint_pos_ENU_.pose.position.z += TAKEOFF_ALTITUDE;
 
   ROS_INFO("Trying to Takeoff");
-  while(!(ros_client_->takeoff_client_.call(takeoff_cmd) && takeoff_cmd.response.success))
+  int i = 0;
+  while (ros::ok() && i < 10*ROS_RATE)
   {
-    ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
+    i++;
+    ROS_INFO("Retrying to Takeoff");
+//    ros_client_->takeoff_client_.call(takeoff_request);
+	ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
-    ROS_WARN("Retrying to Takeoff");
     rate_->sleep();
+//    ros::Duration(.1).sleep();
   }
+//  sleep(10);
+
+  ROS_INFO("landed_state_: %d", landed_state_);
+
   ROS_INFO("Takeoff finished!");
   return;
 }
@@ -310,12 +298,12 @@ void DroneControl::land()
   int i;
   mavros_msgs::CommandTOL land_cmd;
   land_cmd.request.yaw = 0;
-  land_cmd.request.latitude = NAN; //Land at current location
+  land_cmd.request.latitude = NAN; // Land at current location
   land_cmd.request.longitude = NAN;
   land_cmd.request.altitude = 0;
 
   ROS_INFO("Trying to land");
-  while(!(ros_client_->land_client_.call(land_cmd) && land_cmd.response.success))
+  while (!(ros_client_->land_client_.call(land_cmd) && land_cmd.response.success))
   {
     ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
@@ -324,16 +312,15 @@ void DroneControl::land()
   }
 
   // Wait until proper landing (or a maximum of 15 seconds)
-  for(i = 0; ros::ok() && landed_state_ != mavros_msgs::ExtendedState::LANDED_STATE_ON_GROUND && i < MAX_ATTEMPTS; ++i)
+  for (i = 0; ros::ok() && landed_state_ != mavros_msgs::ExtendedState::LANDED_STATE_ON_GROUND && i < MAX_ATTEMPTS; ++i)
   {
     ros::spinOnce();
     rate_->sleep();
   }
-  if(i == MAX_ATTEMPTS)
+  if (i == MAX_ATTEMPTS)
     ROS_WARN("Landing failed, aborting");
   else
     ROS_INFO("Landing success");
-
 
   return;
 }
@@ -342,11 +329,11 @@ void DroneControl::disarm()
 {
   // Disarm
   arm_cmd_.request.value = false;
-  while(ros::ok() && current_state_.armed)
+  while (ros::ok() && current_state_.armed)
   {
-    if( current_state_.armed && (ros::Time::now() - last_request_ > ros::Duration(5.0)))
+    if (current_state_.armed && (ros::Time::now() - last_request_ > ros::Duration(5.0)))
     {
-      if( ros_client_->arming_client_.call(arm_cmd_) && arm_cmd_.response.success)
+      if (ros_client_->arming_client_.call(arm_cmd_) && arm_cmd_.response.success)
       {
         ROS_INFO("Vehicle disarmed");
       }
@@ -360,7 +347,7 @@ void DroneControl::disarm()
 
 double DroneControl::currentYaw()
 {
-  //Calculate yaw current orientation
+  // Calculate yaw current orientation
   double roll, pitch, yaw;
   tf::Quaternion q;
 

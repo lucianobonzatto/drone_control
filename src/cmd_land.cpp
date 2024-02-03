@@ -70,7 +70,7 @@ int main(int argc, char **argv)
   }
   ROS_INFO("Connected to FCU");
   // wait for mode to be set to guided
-  while (current_state.mode != "GUIDED")
+  while (current_state.mode != "OFFBOARD")
   {
     ros::spinOnce();
     rate.sleep();
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 
   // request takeoff
   mavros_msgs::CommandTOL takeoff_request;
-  takeoff_request.request.altitude = 1.5;
+  takeoff_request.request.altitude = 3;
 
   while (!takeoff_request.response.success)
   {
@@ -98,13 +98,16 @@ int main(int argc, char **argv)
   }
   ROS_INFO("Takeoff initialized");
   sleep(10);
+  ROS_INFO("hover");
+  sleep(10);
 
+  ROS_INFO("land");
   while (ros::ok())
   {
     ros::spinOnce();
     rate.sleep();
 
-    if (MODE.data == "GOTO")
+    if (true)
     {
       ros::ServiceClient land_client = controlnode.serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/land");
       mavros_msgs::CommandTOL srv_land;
@@ -113,7 +116,7 @@ int main(int argc, char **argv)
       else
       {
         ROS_ERROR("Landing failed");
-        ros::shutdown();
+        //ros::shutdown();
         return -1;
       }
 
