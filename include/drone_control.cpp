@@ -189,6 +189,42 @@ void DroneControl::cmd_vel(double x, double y, double z, double ang)
   rate_->sleep();
 }
 
+void DroneControl::cmd_vel_base_link(double x, double y, double z, double ang)
+{
+  geometry_msgs::TwistStamped vel_msg;
+  vel_msg.header.stamp = ros::Time::now();
+  vel_msg.header.frame_id = "base_link";
+
+  vel_msg.twist.linear.x = x;
+  vel_msg.twist.linear.y = y;
+  vel_msg.twist.linear.z = z;
+  vel_msg.twist.angular.x = 0;
+  vel_msg.twist.angular.y = 0;
+  vel_msg.twist.angular.z = ang;
+
+  ROS_INFO("SEND VELOCITY: x: %f y: %f z: %f yaw: %f", x, y, z, ang);
+  ros_client_->velocity_pub.publish(vel_msg);
+  ros::spinOnce();
+  rate_->sleep();
+}
+
+void DroneControl::cmd_vel_unstamped(double x, double y, double z, double ang)
+{
+  geometry_msgs::Twist vel_msg;
+
+  vel_msg.linear.x = x;
+  vel_msg.linear.y = y;
+  vel_msg.linear.z = z;
+  vel_msg.angular.x = 0;
+  vel_msg.angular.y = 0;
+  vel_msg.angular.z = ang;
+
+  ROS_INFO("SEND VELOCITY: x: %f y: %f z: %f yaw: %f", x, y, z, ang);
+  ros_client_->velocity_unstamped_pub.publish(vel_msg);
+  ros::spinOnce();
+  rate_->sleep();
+}
+
 void DroneControl::guidedMode()
 {
   // Wait for FCU connection

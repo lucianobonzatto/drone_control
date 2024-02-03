@@ -60,6 +60,9 @@ class DroneControl
     void hover(double seconds);
     
     void cmd_vel(double x, double y, double z, double ang);
+    void cmd_vel_unstamped(double x, double y, double z, double ang);
+    void cmd_vel_base_link(double x, double y, double z, double ang);
+
     void guidedMode();
     void takeOff();
     void land();

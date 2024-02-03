@@ -25,6 +25,7 @@ class ROSClient
     ros::Publisher setpoint_pos_pub_;
 //    ros::Publisher vision_pos_pub_;
     ros::Publisher velocity_pub;
+    ros::Publisher velocity_unstamped_pub;
 
     ros::ServiceClient arming_client_;
     ros::ServiceClient land_client_;
