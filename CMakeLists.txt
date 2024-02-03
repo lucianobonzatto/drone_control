@@ -226,7 +226,31 @@ target_link_libraries(pose_test_4 ${catkin_LIBRARIES})
 
 ## velocity command test
 
-add_executable(velocity_test src/velocity_test.cpp include/drone_control.cpp include/ros_client.cpp)
-target_link_libraries(velocity_test ${catkin_LIBRARIES})
+add_executable(vel_b_0 src/vel_b_0.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_b_0 ${catkin_LIBRARIES})
+
+add_executable(vel_u_0 src/vel_u_0.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_u_0 ${catkin_LIBRARIES})
+
+add_executable(vel_w_0 src/vel_w_0.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_w_0 ${catkin_LIBRARIES})
 
 
+add_executable(vel_b_1 src/vel_b_1.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_b_1 ${catkin_LIBRARIES})
+
+add_executable(vel_u_1 src/vel_u_1.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_u_1 ${catkin_LIBRARIES})
+
+add_executable(vel_w_1 src/vel_w_1.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_w_1 ${catkin_LIBRARIES})
+
+
+add_executable(vel_b_2 src/vel_b_2.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_b_2 ${catkin_LIBRARIES})
+
+add_executable(vel_u_2 src/vel_u_2.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_u_2 ${catkin_LIBRARIES})
+
+add_executable(vel_w_2 src/vel_w_2.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(vel_w_2 ${catkin_LIBRARIES})
