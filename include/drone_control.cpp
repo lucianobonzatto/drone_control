@@ -51,6 +51,25 @@ void DroneControl::local_position_cb(const geometry_msgs::PoseStamped::ConstPtr 
   transformStamped_.transform.rotation = local_position_.pose.orientation;
   br.sendTransform(transformStamped_);
 
+  geometry_msgs::TransformStamped transform_st;
+  transform_st.header.stamp = local_position_.header.stamp;
+  transform_st.header.frame_id = "map";
+  transform_st.child_frame_id = "odom";
+  transform_st.transform.translation.x = gps_init_pos_.pose.position.x;
+  transform_st.transform.translation.y = gps_init_pos_.pose.position.y;
+  transform_st.transform.translation.z = gps_init_pos_.pose.position.z;
+  transform_st.transform.rotation = gps_init_pos_.pose.orientation;
+  br.sendTransform(transform_st);
+
+  transform_st.header.stamp = local_position_.header.stamp;
+  transform_st.header.frame_id = "map";
+  transform_st.child_frame_id = "base_link";
+  transform_st.transform.translation.x = local_position_.pose.position.x;
+  transform_st.transform.translation.y = local_position_.pose.position.y;
+  transform_st.transform.translation.z = local_position_.pose.position.z;
+  transform_st.transform.rotation = local_position_.pose.orientation;
+  br.sendTransform(transform_st);
+
   cnt++;
   if (cnt % 100 == 0)
   {
@@ -245,20 +264,20 @@ void DroneControl::guidedMode()
 
   if (ros::Time::now() - local_position_.header.stamp < ros::Duration(1.0))
   {
-      ROS_INFO("Local_position available");
+    ROS_INFO("Local_position available");
   }
-    else
+  else
   {
-      ROS_WARN("Local_position not available, initializing to 0");
-      local_position_.header.stamp = ros::Time::now();
-      local_position_.header.frame_id = "world";
-      local_position_.pose.position.x = 0;
-      local_position_.pose.position.y = 0;
-      local_position_.pose.position.z = 0;
-      local_position_.pose.orientation.x = 0;
-      local_position_.pose.orientation.y = 0;
-      local_position_.pose.orientation.z = 0;
-      local_position_.pose.orientation.w = 1;
+    ROS_WARN("Local_position not available, initializing to 0");
+    local_position_.header.stamp = ros::Time::now();
+    local_position_.header.frame_id = "world";
+    local_position_.pose.position.x = 0;
+    local_position_.pose.position.y = 0;
+    local_position_.pose.position.z = 0;
+    local_position_.pose.orientation.x = 0;
+    local_position_.pose.orientation.y = 0;
+    local_position_.pose.orientation.z = 0;
+    local_position_.pose.orientation.w = 1;
   }
 
   setpoint_pos_ENU_ = gps_init_pos_ = local_position_;
@@ -306,8 +325,8 @@ void DroneControl::takeOff()
 
   mavros_msgs::CommandTOL takeoff_request;
   takeoff_request.request.altitude = 3;
-	setpoint_pos_ENU_ = gps_init_pos_;
-	setpoint_pos_ENU_.pose.position.z += TAKEOFF_ALTITUDE;
+  setpoint_pos_ENU_ = gps_init_pos_;
+  setpoint_pos_ENU_.pose.position.z += TAKEOFF_ALTITUDE;
 
   ROS_INFO("Trying to Takeoff");
   int i = 0;
@@ -315,7 +334,7 @@ void DroneControl::takeOff()
   {
     i++;
     ROS_INFO("Retrying to Takeoff");
-	ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
+    ros_client_->setpoint_pos_pub_.publish(setpoint_pos_ENU_);
     ros::spinOnce();
     rate_->sleep();
   }
