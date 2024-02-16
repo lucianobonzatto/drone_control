@@ -19,7 +19,7 @@ int main(int argc, char **argv)
   DroneControl drone_control(&ros_client);
 
   int index = 0;
-  float linear_vel = 0.1, angular_vel = 0.1;
+  float linear_vel = 1, angular_vel = 1;
   double command_interval = 1.0;
   ros::Time last_command_time;
   std::vector<VelocityCommand> velocity_commands = {
