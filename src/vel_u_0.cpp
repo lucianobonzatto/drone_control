@@ -57,10 +57,10 @@ int main(int argc, char **argv)
       if (index < velocity_commands.size())
       {
         ROS_INFO("index %d/%ld -> %f %f %f %f", index, velocity_commands.size(),
-                    velocity_commands[index].vel_x,
-                    velocity_commands[index].vel_y,
-                    velocity_commands[index].vel_z,
-                    velocity_commands[index].vel_r);
+                    command.vel_x,
+                    command.vel_y,
+                    command.vel_z,
+                    command.vel_r);
       }
     }
 

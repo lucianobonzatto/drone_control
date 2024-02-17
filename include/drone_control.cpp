@@ -158,7 +158,19 @@ void DroneControl::hover(double seconds)
     rate_->sleep();
   }
 
-  return;
+  // ros::Time current_time, last_command_time = ros::Time::now();
+  // while (ros::ok())
+  // {
+  //   ros_client_->setpoint_pos_pub_.publish(local_position_);
+  //   ros::spinOnce();
+  //   rate_->sleep();
+
+  //   current_time = ros::Time::now();
+  //   if ((current_time - last_command_time).toSec() >= seconds)
+  //   {
+  //     break;
+  //   }
+  // }
 }
 
 void DroneControl::cmd_vel(double x, double y, double z, double ang)
