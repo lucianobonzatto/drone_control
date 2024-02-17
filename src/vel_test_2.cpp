@@ -19,17 +19,29 @@ int main(int argc, char **argv)
   DroneControl drone_control(&ros_client);
 
   int index = 0;
-  float linear_vel = 1, angular_vel = 1;
-  double command_interval = 5.0;
+  float linear_vel = 1, angular_vel = 0.5;
+  double command_interval = 2.0;
   ros::Time last_command_time;
   std::vector<VelocityCommand> velocity_commands = {
       VelocityCommand(0.0, 0.0, 0.0, 0.0),
-      VelocityCommand(linear_vel, 0.0, 0.0, 0.0),
-      VelocityCommand(0.0, 0.0, 0.0, 0.0)};
+      
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
+
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
+
+      VelocityCommand(0.0, 0.0, 0.0, 0.0)
+      };
 
   drone_control.guidedMode();
   drone_control.takeOff();
-  drone_control.hover(1);
 
   last_command_time = ros::Time::now();
   ROS_INFO("Start %d", ros::ok());
