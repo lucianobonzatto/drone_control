@@ -20,14 +20,13 @@ int main(int argc, char **argv)
 
   int index = 0;
   float linear_vel = 1, angular_vel = 1;
-  double command_interval = 1.0;
+  double command_interval = 10.0;
   ros::Time last_command_time;
   std::vector<VelocityCommand> velocity_commands = {
       VelocityCommand(0.0, 0.0, 0.0, 0.0),
-      VelocityCommand(linear_vel, 0.0, 0.0, 0.0),
-      VelocityCommand(0.0, 0.0, 0.0, angular_vel),
-      VelocityCommand(linear_vel, 0.0, 0.0, 0.0),
+      VelocityCommand(linear_vel, 0.0, 0.0, 0.7),
       VelocityCommand(0.0, 0.0, 0.0, 0.0)};
+
 
   drone_control.guidedMode();
   drone_control.takeOff();
@@ -48,11 +47,11 @@ int main(int argc, char **argv)
       break;
     }
     const VelocityCommand command = velocity_commands[index];
-    // drone_control.cmd_vel(command.vel_x, command.vel_y, command.vel_z, command.vel_r);
+    drone_control.cmd_vel(command.vel_x, command.vel_y, command.vel_z, command.vel_r);
 
     if ((current_time - last_command_time).toSec() >= command_interval)
     {
-      drone_control.cmd_vel_unstamped(command.vel_x, command.vel_y, command.vel_z, command.vel_r);
+    //  drone_control.cmd_vel_unstamped(command.vel_x, command.vel_y, command.vel_z, command.vel_r);
       last_command_time = current_time;
       index++;
 
