@@ -19,12 +19,12 @@ int main(int argc, char **argv)
   DroneControl drone_control(&ros_client);
 
   int index = 0;
-  float linear_vel = 1, angular_vel = 1;
+  float linear_vel = 1, angular_vel = 0.7;
   double command_interval = 10.0;
   ros::Time last_command_time;
   std::vector<VelocityCommand> velocity_commands = {
       VelocityCommand(0.0, 0.0, 0.0, 0.0),
-      VelocityCommand(linear_vel, 0.0, 0.0, 0.7),
+      VelocityCommand(linear_vel, 0.0, 0.0, angular_vel),
       VelocityCommand(0.0, 0.0, 0.0, 0.0)};
 
 
@@ -48,10 +48,11 @@ int main(int argc, char **argv)
     }
     const VelocityCommand command = velocity_commands[index];
     drone_control.cmd_vel(command.vel_x, command.vel_y, command.vel_z, command.vel_r);
+    // drone_control.cmd_vel_unstamped(command.vel_x, command.vel_y, command.vel_z, command.vel_r);
+    // drone_control.cmd_vel_base_link(command.vel_x, command.vel_y, command.vel_z, command.vel_r);
 
     if ((current_time - last_command_time).toSec() >= command_interval)
     {
-    //  drone_control.cmd_vel_unstamped(command.vel_x, command.vel_y, command.vel_z, command.vel_r);
       last_command_time = current_time;
       index++;
 
