@@ -37,7 +37,7 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
     ros::Time current_time = ros::Time::now();
-    if (index < velocity_commands.size())
+    if (index >= velocity_commands.size())
     {
       break;
     }
@@ -50,7 +50,6 @@ int main(int argc, char **argv)
       index++;
     }
 
-    drone_control.hover(1);
     ros::spinOnce();
   }
 
