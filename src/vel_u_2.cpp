@@ -34,6 +34,12 @@ int main(int argc, char **argv)
   drone_control.hover(1);
 
   last_command_time = ros::Time::now();
+  ROS_INFO("Start");
+  ROS_INFO("index %d -> ", index, 
+                           velocity_commands[index].vel_x,
+                           velocity_commands[index].vel_y,
+                           velocity_commands[index].vel_z,
+                           velocity_commands[index].vel_r);
   while (ros::ok())
   {
     ros::Time current_time = ros::Time::now();
@@ -48,11 +54,18 @@ int main(int argc, char **argv)
       drone_control.cmd_vel_unstamped(command.vel_x, command.vel_y, command.vel_z, command.vel_r);
       last_command_time = current_time;
       index++;
+      ROS_INFO("index %d -> ", index, 
+                              velocity_commands[index].vel_x,
+                              velocity_commands[index].vel_y,
+                              velocity_commands[index].vel_z,
+                              velocity_commands[index].vel_r);
     }
 
     ros::spinOnce();
+    rate_->sleep();
   }
 
+  ROS_INFO("Stop");
   drone_control.land();
   return 0;
 }
