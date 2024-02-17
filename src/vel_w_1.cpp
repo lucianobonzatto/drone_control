@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     }
 
     ros::spinOnce();
-    rate_->sleep();
+    drone_control.rate_->sleep();
   }
 
   ROS_INFO("Stop");

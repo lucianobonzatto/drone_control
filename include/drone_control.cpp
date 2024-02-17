@@ -185,8 +185,8 @@ void DroneControl::cmd_vel(double x, double y, double z, double ang)
 
   ROS_INFO("SEND VELOCITY: x: %f y: %f z: %f yaw: %f", x, y, z, ang);
   ros_client_->velocity_pub.publish(world_msg);
-  ros::spinOnce();
-  rate_->sleep();
+  // ros::spinOnce();
+  // rate_->sleep();
 }
 
 void DroneControl::cmd_vel_base_link(double x, double y, double z, double ang)
@@ -204,8 +204,8 @@ void DroneControl::cmd_vel_base_link(double x, double y, double z, double ang)
 
   ROS_INFO("SEND VELOCITY: x: %f y: %f z: %f yaw: %f", x, y, z, ang);
   ros_client_->velocity_pub.publish(vel_msg);
-  ros::spinOnce();
-  rate_->sleep();
+//   ros::spinOnce();
+//   rate_->sleep();
 }
 
 void DroneControl::cmd_vel_unstamped(double x, double y, double z, double ang)
@@ -221,8 +221,8 @@ void DroneControl::cmd_vel_unstamped(double x, double y, double z, double ang)
 
   ROS_INFO("SEND VELOCITY: x: %f y: %f z: %f yaw: %f", x, y, z, ang);
   ros_client_->velocity_unstamped_pub.publish(vel_msg);
-  ros::spinOnce();
-  rate_->sleep();
+  // ros::spinOnce();
+  // rate_->sleep();
 }
 
 void DroneControl::guidedMode()
