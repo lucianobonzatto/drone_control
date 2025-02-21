@@ -234,3 +234,6 @@ target_link_libraries(vel_test_1 ${catkin_LIBRARIES})
 
 add_executable(vel_test_2 src/vel_test_2.cpp include/drone_control.cpp include/ros_client.cpp)
 target_link_libraries(vel_test_2 ${catkin_LIBRARIES})
+
+add_executable(transferfunction_rotin src/transferfunction_rotin.cpp include/drone_control.cpp include/ros_client.cpp)
+target_link_libraries(transferfunction_rotin ${catkin_LIBRARIES})
