@@ -1,91 +1,103 @@
-/**
- * @file offb_node.cpp
- * @brief offboard example node, written with mavros version 0.14.2, px4 flight
- * stack and tested in Gazebo SITL
- */
-
 #ifndef DRONE_CONTROL_H
 #define DRONE_CONTROL_H
 
 #include "ros_client.h"
 
-#include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <mavros_msgs/State.h>
-#include <mavros_msgs/ExtendedState.h>
-#include <mavros_msgs/CommandBool.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <geometry_msgs/PoseArray.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <sensor_msgs/NavSatFix.h>
-#include <tf2_ros/transform_listener.h>
-#include <math.h>
+#include "rclcpp/rclcpp.hpp"
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
+#include "tf2_ros/transform_broadcaster.h"
 
-class ROSClient; // Forward declaration because of circular reference
+// // #include <math.h>
+
+// // #include <geometry_msgs/PoseWithCovarianceStamped.h>
+// // #include <geometry_msgs/PoseArray.h>
+#include "geometry_msgs/msg/pose_stamped.hpp"
+// // #include "geometry_msgs/msg/pose_array.hpp"
+// // #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
+// #include "geometry_msgs/msg/twist.hpp"
+
+// #include "std_msgs/msg/string.hpp"
+
+#include "mavros_msgs/srv/command_bool.hpp"
+// #include "mavros_msgs/srv/command_tol.hpp"
+// #include "mavros_msgs/srv/set_mode.hpp"
+#include "mavros_msgs/msg/state.hpp"
+#include "mavros_msgs/msg/extended_state.hpp"
+// #include "mavros_msgs/msg/global_position_target.hpp"
+
+#include "sensor_msgs/msg/nav_sat_fix.hpp"
+
+// #include "geographic_msgs/msg/geo_pose_stamped.hpp"
+
+class ROSClient;
 
 class DroneControl
 {
-  public:
+public:
     DroneControl(ROSClient *ros_client);
     ~DroneControl();
 
-    static constexpr float TAKEOFF_ALTITUDE = 5.0;
+    static constexpr float TAKEOFF_ALTITUDE = 3.0;
     static constexpr float ROS_RATE = 20.0;
-    static constexpr int   MAX_ATTEMPTS = 100;
-    static constexpr int   KEEP_TIME = 100;
-    static constexpr float TEST_FLIGHT_DURATION = 3.0; //In seconds per side
-    static constexpr float TEST_FLIGHT_LENGTH = 2.0;   //In meters
-    static constexpr int   TEST_FLIGHT_REPEAT = 2;     //Times
-    static constexpr bool  KEEP_ALIVE = true;
+    static constexpr int MAX_ATTEMPTS = 100;
+    //     static constexpr int   KEEP_TIME = 100;
+    //     static constexpr float TEST_FLIGHT_DURATION = 3.0; //In seconds per side
+    //     static constexpr float TEST_FLIGHT_LENGTH = 2.0;   //In meters
+    //     static constexpr int   TEST_FLIGHT_REPEAT = 2;     //Times
+    //     static constexpr bool  KEEP_ALIVE = true;
     static constexpr double LAT_DEG_TO_M = 111000.0;
     static constexpr double LON_DEG_TO_M = 75000.0;
 
     // The setpoint publishing rate MUST be faster than 2Hz
-    ros::Rate *rate_;
+    ROSClient *ros_client_;
+    rclcpp::Rate *rate_;
     tf2_ros::Buffer tfBuffer_;
+    tf2_ros::TransformListener tfListener_;
+    tf2_ros::TransformBroadcaster br_;
 
-    mavros_msgs::State current_state_;
-    geometry_msgs::PoseStamped local_position_;
-    sensor_msgs::NavSatFix global_position_;
-    geometry_msgs::TransformStamped transformStamped_;
+    mavros_msgs::msg::State current_state_;
+    geometry_msgs::msg::PoseStamped local_position_;
+    sensor_msgs::msg::NavSatFix global_position_;
+    geometry_msgs::msg::TransformStamped transformStamped_;
+    uint8_t landed_state_;
 
-    void state_cb(const mavros_msgs::State::ConstPtr &msg);
-    void extended_state_cb(const mavros_msgs::ExtendedState::ConstPtr &msg);
-    void local_position_cb(const geometry_msgs::PoseStamped::ConstPtr &msg);
-    void global_position_cb(const sensor_msgs::NavSatFix::ConstPtr &msg);
+    void state_cb(const mavros_msgs::msg::State::SharedPtr msg);
+    void extended_state_cb(const mavros_msgs::msg::ExtendedState::SharedPtr msg);
+    void local_position_cb(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+    void global_position_cb(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
 
     void flyToGlobal(double latitude, double longitude, double altitude, double yaw);
     void flyToLocal(double x, double y, double z, double yaw);
     void hover(double seconds);
-    
-    void cmd_vel(double x, double y, double z, double ang);
-    void cmd_vel_unstamped(double x, double y, double z, double ang);
-    void cmd_vel_base_link(double x, double y, double z, double ang);
 
-    void guidedMode();
+    void cmd_vel(double x, double y, double z, double ang);
+    void cmd_vel_base_link(double x, double y, double z, double ang);
+    void cmd_vel_unstamped(double x, double y, double z, double ang);
+
+    void await_OFFBOARD_Mode();
+    void set_OFFBOARD_Mode();
+    
     void takeOff();
     void land();
     void disarm();
+    void arm();
 
-  private:
-    uint8_t landed_state_ = 0;
+private:
+    geometry_msgs::msg::PoseStamped setpoint_pos_ENU_;
+    //     geometry_msgs::PoseStamped endpoint_pos_ENU_;
+    //     geometry_msgs::PoseStamped vision_pos_ENU_;
+    geometry_msgs::msg::PoseStamped gps_init_pos_;
 
-    geometry_msgs::PoseStamped setpoint_pos_ENU_;
-    geometry_msgs::PoseStamped endpoint_pos_ENU_;
-    geometry_msgs::PoseStamped vision_pos_ENU_;
-    geometry_msgs::PoseStamped gps_init_pos_;
+    rclcpp::Time last_request_;
 
-    ros::Time last_request_;
-
-    mavros_msgs::CommandBool arm_cmd_;
-    std_msgs::String ewok_cmd_;
-
-    ROSClient *ros_client_;
+    mavros_msgs::srv::CommandBool arm_cmd_;
+    //     std_msgs::String ewok_cmd_;
 
     double currentYaw();
-    double distance(const geometry_msgs::PoseStamped &p1, const geometry_msgs::PoseStamped &p2);
+    double distance(const geometry_msgs::msg::PoseStamped &p1, const geometry_msgs::msg::PoseStamped &p2);
 };
-
 
 #endif /* DRONE_CONTROL_H */
