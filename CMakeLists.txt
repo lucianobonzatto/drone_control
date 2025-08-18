@@ -42,6 +42,74 @@ ament_target_dependencies( centralize
   tf2_geometry_msgs
 )
 
+add_executable(pose_test_0 src/pose_test_0.cpp include/ros_client.cpp include/drone_control.cpp)
+install(TARGETS pose_test_0 DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies( pose_test_0 
+  rclcpp 
+  std_msgs
+  geometry_msgs
+  geographic_msgs
+  mavros_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
+
+add_executable(pose_test_1 src/pose_test_1.cpp include/ros_client.cpp include/drone_control.cpp)
+install(TARGETS pose_test_1 DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies( pose_test_1
+  rclcpp 
+  std_msgs
+  geometry_msgs
+  geographic_msgs
+  mavros_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
+
+add_executable(pose_test_2 src/pose_test_2.cpp include/ros_client.cpp include/drone_control.cpp)
+install(TARGETS pose_test_2 DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies( pose_test_2
+  rclcpp 
+  std_msgs
+  geometry_msgs
+  geographic_msgs
+  mavros_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
+
+add_executable(pose_test_3 src/pose_test_3.cpp include/ros_client.cpp include/drone_control.cpp)
+install(TARGETS pose_test_3 DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies( pose_test_3
+  rclcpp 
+  std_msgs
+  geometry_msgs
+  geographic_msgs
+  mavros_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
+
+add_executable(pose_test_4 src/pose_test_4.cpp include/ros_client.cpp include/drone_control.cpp)
+install(TARGETS pose_test_4 DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies( pose_test_4
+  rclcpp 
+  std_msgs
+  geometry_msgs
+  geographic_msgs
+  mavros_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
+
+
+
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

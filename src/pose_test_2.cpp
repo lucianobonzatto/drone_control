@@ -7,10 +7,14 @@
 
 int main(int argc, char **argv)
 {
-  ROSClient ros_client(argc, argv);
-  DroneControl drone_control(&ros_client);
+  rclcpp::init(argc, argv);
+  auto node = rclcpp::Node::make_shared("ros_client_node");
 
-  drone_control.guidedMode();
+  ROSClient ros_client(node);
+  DroneControl drone_control(&ros_client);
+  rclcpp::spin_some(node);
+
+  drone_control.set_OFFBOARD_Mode();
   drone_control.takeOff();
 
   drone_control.hover(HOVER_TIME);
@@ -23,6 +27,8 @@ int main(int argc, char **argv)
   drone_control.flyToLocal(0, 4, ALTITUDE, 0);
   drone_control.hover(HOVER_TIME);
   drone_control.flyToLocal(0, 0, ALTITUDE, 0);
+  drone_control.hover(HOVER_TIME);
+  drone_control.flyToLocal(0, 0, ALTITUDE/2, 0);
   drone_control.hover(HOVER_TIME);
 
   drone_control.land();
