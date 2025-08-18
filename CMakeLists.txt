@@ -107,8 +107,44 @@ ament_target_dependencies( pose_test_4
   tf2_geometry_msgs
 )
 
+add_executable(vel_test_0 src/vel_test_0.cpp include/ros_client.cpp include/drone_control.cpp)
+install(TARGETS vel_test_0 DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies( vel_test_0
+  rclcpp 
+  std_msgs
+  geometry_msgs
+  geographic_msgs
+  mavros_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
 
+add_executable(vel_test_1 src/vel_test_1.cpp include/ros_client.cpp include/drone_control.cpp)
+install(TARGETS vel_test_1 DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies( vel_test_1
+  rclcpp 
+  std_msgs
+  geometry_msgs
+  geographic_msgs
+  mavros_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
 
+add_executable(vel_test_2 src/vel_test_2.cpp include/ros_client.cpp include/drone_control.cpp)
+install(TARGETS vel_test_2 DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies( vel_test_2
+  rclcpp 
+  std_msgs
+  geometry_msgs
+  geographic_msgs
+  mavros_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
 
 
 if(BUILD_TESTING)
