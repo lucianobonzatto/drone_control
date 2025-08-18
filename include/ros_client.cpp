@@ -6,12 +6,18 @@
 
 void ROSClient::init(DroneControl *const drone_control)
 {
-    pub_ = nh_->create_publisher<std_msgs::msg::String>("topic", 10);
-
-    state_sub_ = nh_->create_subscription<mavros_msgs::msg::State>("/mavros/state", 10, std::bind(&DroneControl::state_cb, drone_control, std::placeholders::_1));
-    extended_state_sub_ = nh_->create_subscription<mavros_msgs::msg::ExtendedState>("/mavros/extended_state", 10, std::bind(&DroneControl::extended_state_cb, drone_control, std::placeholders::_1));
-    local_pos_sub_ = nh_->create_subscription<geometry_msgs::msg::PoseStamped>("/mavros/local_position/pose", 10, std::bind(&DroneControl::local_position_cb, drone_control, std::placeholders::_1));
-    global_pos_sub_ = nh_->create_subscription<sensor_msgs::msg::NavSatFix>("/mavros/global_position/global", 10, std::bind(&DroneControl::global_position_cb, drone_control, std::placeholders::_1));
+    state_sub_ = nh_->create_subscription<mavros_msgs::msg::State>("/mavros/state",
+                                                                   rclcpp::QoS(rclcpp::KeepLast(10)).reliable().transient_local(),
+                                                                   std::bind(&DroneControl::state_cb, drone_control, std::placeholders::_1));
+    extended_state_sub_ = nh_->create_subscription<mavros_msgs::msg::ExtendedState>("/mavros/extended_state",
+                                                                                    rclcpp::QoS(rclcpp::KeepLast(10)).reliable().transient_local(),
+                                                                                    std::bind(&DroneControl::extended_state_cb, drone_control, std::placeholders::_1));
+    local_pos_sub_ = nh_->create_subscription<geometry_msgs::msg::PoseStamped>("/mavros/local_position/pose",
+                                                                               rclcpp::QoS(rclcpp::KeepLast(10)).best_effort(),
+                                                                               std::bind(&DroneControl::local_position_cb, drone_control, std::placeholders::_1));
+    global_pos_sub_ = nh_->create_subscription<sensor_msgs::msg::NavSatFix>("/mavros/global_position/global",
+                                                                            rclcpp::QoS(rclcpp::KeepLast(10)).best_effort(),
+                                                                            std::bind(&DroneControl::global_position_cb, drone_control, std::placeholders::_1));
 
     global_setpoint_pos_pub_ = nh_->create_publisher<geographic_msgs::msg::GeoPoseStamped>("/mavros/setpoint_position/global", 10);
     setpoint_pos_pub_ = nh_->create_publisher<geometry_msgs::msg::PoseStamped>("/mavros/setpoint_position/local", 10);

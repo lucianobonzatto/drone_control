@@ -17,8 +17,8 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
 add_executable(drone_test src/drone_test.cpp include/ros_client.cpp include/drone_control.cpp)
-ament_target_dependencies(
-  drone_test 
+install(TARGETS drone_test DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies( drone_test 
   rclcpp 
   std_msgs
   geometry_msgs
@@ -29,8 +29,19 @@ ament_target_dependencies(
   tf2_geometry_msgs
 )
 
-install(TARGETS drone_test
-  DESTINATION lib/${PROJECT_NAME})
+add_executable(centralize src/centralize.cpp include/ros_client.cpp include/drone_control.cpp)
+install(TARGETS centralize DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies( centralize 
+  rclcpp 
+  std_msgs
+  geometry_msgs
+  geographic_msgs
+  mavros_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

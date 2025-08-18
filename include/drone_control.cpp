@@ -1,15 +1,4 @@
 #include "drone_control.h"
-
-// #include <mavros_msgs/CommandTOL.h>
-// #include <mavros_msgs/SetMode.h>
-// #include <tf/tf.h>
-// #include <tf2/LinearMath/Quaternion.h>
-// #include <tf2_ros/static_transform_broadcaster.h>
-// #include <tf2_ros/transform_broadcaster.h>
-// #include <geometry_msgs/TwistStamped.h>
-// #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-// #include <geometry_msgs/Vector3.h>
-
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 DroneControl::DroneControl(ROSClient *ros_client)
@@ -26,6 +15,7 @@ DroneControl::DroneControl(ROSClient *ros_client)
     gps_init_pos_.pose.position.y = 0.0;
     gps_init_pos_.pose.position.z = 0.0;
     gps_init_pos_.pose.orientation.w = 1.0;
+    current_state_.connected = false;
 
     // Wait for FCU connection
     while (rclcpp::ok() && current_state_.connected)
@@ -59,20 +49,6 @@ void DroneControl::local_position_cb(const geometry_msgs::msg::PoseStamped::Shar
     transformStamped_.transform.translation.z = local_position_.pose.position.z;
     transformStamped_.transform.rotation = local_position_.pose.orientation;
     br_.sendTransform(transformStamped_);
-}
-
-DroneControl::~DroneControl()
-{
-    geometry_msgs::msg::TwistStamped vel_msg;
-
-    vel_msg.header.stamp = ros_client_->nh_->now();
-    vel_msg.twist.linear.x = 0;
-    vel_msg.twist.linear.y = 0;
-    vel_msg.twist.linear.z = 0;
-    vel_msg.twist.angular.x = 0;
-    vel_msg.twist.angular.y = 0;
-    vel_msg.twist.angular.z = 0;
-    ros_client_->velocity_pub->publish(vel_msg);
 }
 
 void DroneControl::global_position_cb(const sensor_msgs::msg::NavSatFix::SharedPtr msg)
@@ -166,6 +142,7 @@ void DroneControl::hover(double seconds)
 
     while (rclcpp::ok() && (ros_client_->nh_->now() - start_time).seconds() < seconds)
     {
+        local_position_.header.stamp = ros_client_->nh_->get_clock()->now();
         ros_client_->setpoint_pos_pub_->publish(local_position_);
         rclcpp::spin_some(ros_client_->nh_);
         rate_->sleep();
@@ -353,17 +330,16 @@ void DroneControl::arm()
     }
 
     auto future = ros_client_->arming_client_->async_send_request(request);
-
-    // Espera a resposta
     while (rclcpp::ok())
     {
         rclcpp::spin_some(ros_client_->nh_);
-        if (future.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready)
+        ros_client_->setpoint_pos_pub_->publish(setpoint_pos_ENU_);
+        if (rclcpp::spin_until_future_complete(ros_client_->nh_, future) == rclcpp::FutureReturnCode::SUCCESS)
         {
             if (future.get()->success)
             {
                 RCLCPP_INFO(ros_client_->nh_->get_logger(), "Drone armed successfully");
-                return;
+                break;
             }
             else
             {
@@ -378,7 +354,6 @@ void DroneControl::arm()
 void DroneControl::takeOff()
 {
     arm();
-    rclcpp::sleep_for(std::chrono::seconds(3));
 
     setpoint_pos_ENU_ = gps_init_pos_;
     setpoint_pos_ENU_.pose.position.z += TAKEOFF_ALTITUDE;
@@ -388,6 +363,7 @@ void DroneControl::takeOff()
     int i = 0;
     while (rclcpp::ok() && i < MAX_ATTEMPTS)
     {
+        setpoint_pos_ENU_.header.stamp = ros_client_->nh_->get_clock()->now();
         ros_client_->setpoint_pos_pub_->publish(setpoint_pos_ENU_);
         rclcpp::spin_some(ros_client_->nh_);
         rate_->sleep();
@@ -416,34 +392,38 @@ void DroneControl::land()
     }
 
     auto future = client->async_send_request(request);
-
     while (rclcpp::ok())
     {
         rclcpp::spin_some(ros_client_->nh_);
-        if (future.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready)
+        ros_client_->setpoint_pos_pub_->publish(setpoint_pos_ENU_);
+        if (rclcpp::spin_until_future_complete(ros_client_->nh_, future) == rclcpp::FutureReturnCode::SUCCESS)
         {
             if (future.get()->success)
             {
                 RCLCPP_INFO(ros_client_->nh_->get_logger(), "Land command accepted");
+                break;
             }
             else
             {
                 RCLCPP_WARN(ros_client_->nh_->get_logger(), "Land command failed, retrying");
-                future = client->async_send_request(request); // tenta novamente
+                future = client->async_send_request(request);
             }
         }
         rate_->sleep();
     }
 
-    int i = 0;
-    while (rclcpp::ok() && landed_state_ != mavros_msgs::msg::ExtendedState::LANDED_STATE_ON_GROUND && i < MAX_ATTEMPTS)
+    auto start_time = ros_client_->nh_->now(); // tempo inicial
+    rclcpp::Duration timeout = rclcpp::Duration::from_seconds(60.0);
+
+    while (rclcpp::ok() &&
+           landed_state_ != mavros_msgs::msg::ExtendedState::LANDED_STATE_ON_GROUND &&
+           (ros_client_->nh_->now() - start_time) < timeout)
     {
         rclcpp::spin_some(ros_client_->nh_);
         rate_->sleep();
-        i++;
     }
 
-    if (i == MAX_ATTEMPTS)
+    if ((ros_client_->nh_->now() - start_time) >= timeout)
         RCLCPP_WARN(ros_client_->nh_->get_logger(), "Landing failed, aborting");
     else
         RCLCPP_INFO(ros_client_->nh_->get_logger(), "Landing success");

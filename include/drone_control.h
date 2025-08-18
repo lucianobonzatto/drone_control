@@ -38,7 +38,6 @@ class DroneControl
 {
 public:
     DroneControl(ROSClient *ros_client);
-    ~DroneControl();
 
     static constexpr float TAKEOFF_ALTITUDE = 3.0;
     static constexpr float ROS_RATE = 20.0;
